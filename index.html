@@ -81,9 +81,7 @@
   .label.active { color: var(--ms-gold); }
   .hint { font-size: 9px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--ms-muted); margin-top: 6px; opacity: 0.6; font-weight: 500; }
 
-  .time-editor { display: none; flex-direction: column; align-items: center; gap: 16px; }
-  .time-editor.open { display: flex; }
-  .timer-display.editing { display: none; }
+  /* editor uses modal-backdrop pattern - no extra CSS needed */
   .stepper { display: flex; align-items: center; gap: 16px; }
   .step-btn {
     width: 56px; height: 56px; border-radius: 50%;
@@ -93,8 +91,8 @@
   }
   .step-btn:active { background: rgba(245, 241, 232, 0.14); transform: scale(0.95); }
   .step-value {
-    font-size: clamp(56px, 16vw, 80px); font-weight: 200; letter-spacing: -0.04em; line-height: 1;
-    min-width: 140px; text-align: center; font-variant-numeric: tabular-nums;
+    font-size: 72px; font-weight: 200; letter-spacing: -0.04em; line-height: 1;
+    min-width: 120px; text-align: center; font-variant-numeric: tabular-nums;
   }
   .step-unit { font-size: 11px; letter-spacing: 0.32em; text-transform: uppercase; color: var(--ms-muted); font-weight: 500; }
   .step-done {
@@ -186,24 +184,31 @@
         <circle class="track" cx="100" cy="100" r="96"></circle>
         <circle class="progress" cx="100" cy="100" r="96" stroke-dasharray="603.19" stroke-dashoffset="0"></circle>
       </svg>
-
       <div class="timer-display" id="timer-display">
         <div class="time" id="time">00:00</div>
         <div class="label" id="label">Choose a break</div>
         <div class="hint" id="hint" style="display:none;">Tap to adjust</div>
       </div>
-
-      <div class="time-editor" id="editor">
-        <div class="step-unit">Minutes</div>
-        <div class="stepper">
-          <button class="step-btn" id="step-down">−</button>
-          <div class="step-value" id="step-value">30</div>
-          <button class="step-btn" id="step-up">+</button>
-        </div>
-        <button class="step-done" id="step-done">Done</button>
-      </div>
     </div>
   </div>
+
+<!-- Adjust duration sheet -->
+<div class="modal-backdrop" id="editor-backdrop">
+  <div class="modal" id="editor-modal">
+    <h2 id="editor-title">Adjust duration</h2>
+    <div class="sub" id="editor-sub">Lunch break</div>
+    <div class="stepper" style="justify-content:center; margin: 24px 0;">
+      <button class="step-btn" id="step-down">&#x2212;</button>
+      <div class="step-value" id="step-value">30</div>
+      <button class="step-btn" id="step-up">+</button>
+    </div>
+    <div class="step-unit" style="text-align:center; margin-bottom:24px;">minutes</div>
+    <div class="action-row">
+      <button class="btn-primary" id="step-done">Set</button>
+      <button class="btn-secondary" id="step-cancel">Cancel</button>
+    </div>
+  </div>
+</div>
 
   <div class="controls">
     <div class="duration-row">
@@ -307,31 +312,25 @@
     renderTimer();
   }
 
-  // Inline editor
+  // Duration editor - bottom sheet modal
   function openEditor() {
     if (running || !selected) return;
     $('step-value').textContent = state[selected];
-    $('timer-display').classList.add('editing');
-    $('editor').classList.add('open');
+    $('editor-sub').textContent = selected === 'lunch' ? 'Lunch break' : 'Afternoon break';
+    $('editor-backdrop').classList.add('open');
   }
-  function closeEditor() {
+  function closeEditor(save_val) {
+    $('editor-backdrop').classList.remove('open');
+    if (!save_val) return;
     const v = parseInt($('step-value').textContent, 10);
     if (v > 0 && v <= 180) { state[selected] = v; save(); renderDurations(); selectSlot(selected); }
-    $('timer-display').classList.remove('editing');
-    $('editor').classList.remove('open');
   }
-  $('timer-display').addEventListener('click', e => {
-    // Only open editor when clicking the display itself, not children inside the editor
-    if ($('editor').classList.contains('open')) return;
-    openEditor();
-  });
-  $('step-up').addEventListener('click', e => {
-    e.stopPropagation();
+  $('timer-display').addEventListener('click', () => openEditor());
+  $('step-up').addEventListener('click', () => {
     $('step-value').textContent = Math.min(180, parseInt($('step-value').textContent,10) + 1);
     if (navigator.vibrate) navigator.vibrate(8);
   });
-  $('step-down').addEventListener('click', e => {
-    e.stopPropagation();
+  $('step-down').addEventListener('click', () => {
     $('step-value').textContent = Math.max(1, parseInt($('step-value').textContent,10) - 1);
     if (navigator.vibrate) navigator.vibrate(8);
   });
@@ -343,13 +342,14 @@
     }, 100);
   }
   function stopHold() { if (holdTimer) { clearInterval(holdTimer); holdTimer = null; } }
-  $('step-up').addEventListener('pointerdown', e => { e.stopPropagation(); setTimeout(() => startHold(1), 350); });
-  $('step-down').addEventListener('pointerdown', e => { e.stopPropagation(); setTimeout(() => startHold(-1), 350); });
+  $('step-up').addEventListener('pointerdown', () => setTimeout(() => startHold(1), 350));
+  $('step-down').addEventListener('pointerdown', () => setTimeout(() => startHold(-1), 350));
   ['pointerup','pointerleave','pointercancel'].forEach(e => {
     $('step-up').addEventListener(e, stopHold);
     $('step-down').addEventListener(e, stopHold);
   });
-  $('step-done').addEventListener('click', e => { e.stopPropagation(); closeEditor(); });
+  $('step-done').addEventListener('click', () => closeEditor(true));
+  $('step-cancel').addEventListener('click', () => closeEditor(false));
 
   // Audio chime
   function ensureAudio() {
