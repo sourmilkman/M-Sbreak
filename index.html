@@ -150,7 +150,7 @@ header { text-align: center; padding-top: 12px; }
 <div class="app">
   <header>
     <div class="brand">M<span class="amp">&amp;</span>S</div>
-    <div class="brand-sub">Breaktimer</div>
+    <div class="brand-sub">Breaktimer · v6</div>
     <div class="divider"></div>
   </header>
 
@@ -305,26 +305,6 @@ function stepBy(delta) {
 
 el('sup').addEventListener('click', () => stepBy(1));
 el('sdown').addEventListener('click', () => stepBy(-1));
-
-// Long press to fast-scroll
-let holdTimeout = null, holdInterval = null;
-function endHold() {
-  clearTimeout(holdTimeout); holdTimeout = null;
-  clearInterval(holdInterval); holdInterval = null;
-}
-function startHold(delta) {
-  holdTimeout = setTimeout(() => {
-    holdInterval = setInterval(() => stepBy(delta), 80);
-  }, 400);
-}
-['pointerdown','touchstart'].forEach(ev => {
-  el('sup').addEventListener(ev, e => { e.preventDefault(); startHold(1); });
-  el('sdown').addEventListener(ev, e => { e.preventDefault(); startHold(-1); });
-});
-['pointerup','pointerleave','pointercancel','touchend','touchcancel'].forEach(ev => {
-  el('sup').addEventListener(ev, endHold);
-  el('sdown').addEventListener(ev, endHold);
-});
 
 el('editor-set').addEventListener('click', () => {
   const v = parseInt(el('sval').textContent, 10);
