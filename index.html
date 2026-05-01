@@ -320,12 +320,18 @@
     $('timer-display').classList.remove('editing');
     $('editor').classList.remove('open');
   }
-  $('timer-display').addEventListener('click', openEditor);
-  $('step-up').addEventListener('click', () => {
+  $('timer-display').addEventListener('click', e => {
+    // Only open editor when clicking the display itself, not children inside the editor
+    if ($('editor').classList.contains('open')) return;
+    openEditor();
+  });
+  $('step-up').addEventListener('click', e => {
+    e.stopPropagation();
     $('step-value').textContent = Math.min(180, parseInt($('step-value').textContent,10) + 1);
     if (navigator.vibrate) navigator.vibrate(8);
   });
-  $('step-down').addEventListener('click', () => {
+  $('step-down').addEventListener('click', e => {
+    e.stopPropagation();
     $('step-value').textContent = Math.max(1, parseInt($('step-value').textContent,10) - 1);
     if (navigator.vibrate) navigator.vibrate(8);
   });
@@ -337,13 +343,13 @@
     }, 100);
   }
   function stopHold() { if (holdTimer) { clearInterval(holdTimer); holdTimer = null; } }
-  $('step-up').addEventListener('pointerdown', () => setTimeout(() => startHold(1), 350));
-  $('step-down').addEventListener('pointerdown', () => setTimeout(() => startHold(-1), 350));
+  $('step-up').addEventListener('pointerdown', e => { e.stopPropagation(); setTimeout(() => startHold(1), 350); });
+  $('step-down').addEventListener('pointerdown', e => { e.stopPropagation(); setTimeout(() => startHold(-1), 350); });
   ['pointerup','pointerleave','pointercancel'].forEach(e => {
     $('step-up').addEventListener(e, stopHold);
     $('step-down').addEventListener(e, stopHold);
   });
-  $('step-done').addEventListener('click', closeEditor);
+  $('step-done').addEventListener('click', e => { e.stopPropagation(); closeEditor(); });
 
   // Audio chime
   function ensureAudio() {
