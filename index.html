@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#00401C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="M&S Breaktimer">
+<title>M&amp;S Breaktimer</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --ms-green: #00401C;
+    --ms-green-deep: #002D14;
+    --ms-green-light: #1F5E3A;
+    --ms-cream: #F5F1E8;
+    --ms-gold: #B8956A;
+    --ms-text: #1A1A1A;
+    --ms-muted: rgba(245, 241, 232, 0.55);
+    --ms-line: rgba(245, 241, 232, 0.15);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+    background: var(--ms-green-deep);
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    color: var(--ms-cream);
+    background:
+      radial-gradient(ellipse at top, var(--ms-green-light) 0%, var(--ms-green) 40%, var(--ms-green-deep) 100%);
+    display: flex;
+    flex-direction: column;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* Subtle grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+    opacity: 0.06;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .app {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 24px 28px 32px;
+    position: relative;
+    z-index: 2;
+    max-width: 480px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  /* Header */
+  header {
+    text-align: center;
+    padding-top: 12px;
+  }
+  .brand-mark {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    font-size: 28px;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .brand-mark .amp { font-style: italic; font-weight: 400; color: var(--ms-gold); margin: 0 2px; }
+  .brand-sub {
+    font-size: 10px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--ms-muted);
+    margin-top: 8px;
+    font-weight: 500;
+  }
+  .divider {
+    width: 32px;
+    height: 1px;
+    background: var(--ms-gold);
+    margin: 16px auto 0;
+    opacity: 0.6;
+  }
+
+  /* Timer display */
+  .timer-stage {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .ring-wrap {
+    position: relative;
+    width: min(78vw, 320px);
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ring {
+    position: absolute;
+    inset: 0;
+    transform: rotate(-90deg);
+  }
+  .ring circle {
+    fill: none;
+    stroke-width: 2;
+  }
+  .ring .track { stroke: var(--ms-line); }
+  .ring .progress {
+    stroke: var(--ms-gold);
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.95s linear;
+  }
+
+  .timer-display {
+    text-align: center;
+    position: relative;
+    z-index: 1;
+  }
+  .time {
+    font-family: 'Playfair Display', serif;
+    font-weight: 400;
+    font-size: clamp(60px, 18vw, 92px);
+    letter-spacing: -0.04em;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    transition: color 0.3s ease;
+  }
+  .time.warning { color: var(--ms-gold); }
+  .time.done { color: #FF8A65; animation: pulse 0.8s ease-in-out infinite; }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .label {
+    margin-top: 14px;
+    font-size: 10px;
+    letter-spacing: 0.36em;
+    text-transform: uppercase;
+    color: var(--ms-muted);
+    min-height: 14px;
+    font-weight: 500;
+  }
+  .label.active { color: var(--ms-gold); }
+
+  /* Controls */
+  .controls {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding-top: 24px;
+  }
+
+  .duration-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .btn-duration {
+    background: rgba(245, 241, 232, 0.04);
+    border: 1px solid var(--ms-line);
+    color: var(--ms-cream);
+    padding: 18px 12px;
+    border-radius: 2px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+    backdrop-filter: blur(10px);
+  }
+  .btn-duration:active {
+    background: rgba(245, 241, 232, 0.1);
+    transform: scale(0.98);
+  }
+  .btn-duration.selected {
+    background: var(--ms-cream);
+    color: var(--ms-green-deep);
+    border-color: var(--ms-cream);
+  }
+  .btn-duration .mins {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1;
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+  }
+  .btn-duration .mins .unit {
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-family: 'Inter', sans-serif;
+    opacity: 0.7;
+  }
+  .btn-duration .desc {
+    font-size: 10px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    margin-top: 6px;
+    opacity: 0.65;
+    font-weight: 500;
+  }
+
+  .action-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 4px;
+  }
+
+  .btn-primary, .btn-secondary {
+    flex: 1;
+    padding: 16px;
+    border-radius: 2px;
+    font-family: inherit;
+    font-size: 11px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid var(--ms-line);
+  }
+  .btn-primary {
+    background: var(--ms-gold);
+    color: var(--ms-green-deep);
+    border-color: var(--ms-gold);
+    flex: 2;
+  }
+  .btn-primary:active { transform: scale(0.98); opacity: 0.9; }
+  .btn-primary:disabled { opacity: 0.3; cursor: not-allowed; }
+  .btn-secondary {
+    background: transparent;
+    color: var(--ms-cream);
+  }
+  .btn-secondary:active { background: rgba(245, 241, 232, 0.08); }
+
+  /* Settings link */
+  .settings-link {
+    text-align: center;
+    margin-top: 16px;
+    font-size: 10px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--ms-muted);
+    cursor: pointer;
+    font-weight: 500;
+  }
+
+  /* Settings modal */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 20, 8, 0.85);
+    backdrop-filter: blur(8px);
+    z-index: 10;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: var(--ms-green);
+    border-top: 1px solid var(--ms-gold);
+    width: 100%;
+    max-width: 480px;
+    padding: 28px 28px calc(28px + env(safe-area-inset-bottom));
+    animation: slideUp 0.3s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .modal h2 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 20px;
+    margin-bottom: 4px;
+  }
+  .modal .sub {
+    font-size: 10px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--ms-muted);
+    margin-bottom: 20px;
+  }
+  .field {
+    margin-bottom: 16px;
+  }
+  .field label {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--ms-muted);
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  .field input {
+    width: 100%;
+    background: rgba(245, 241, 232, 0.06);
+    border: 1px solid var(--ms-line);
+    color: var(--ms-cream);
+    padding: 14px 16px;
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    border-radius: 2px;
+    -moz-appearance: textfield;
+  }
+  .field input::-webkit-outer-spin-button,
+  .field input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .field input:focus { outline: none; border-color: var(--ms-gold); }
+
+  .toggle-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--ms-line);
+  }
+  .toggle-row:last-of-type { border-bottom: none; }
+  .toggle-row span {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  .toggle {
+    width: 44px;
+    height: 24px;
+    background: rgba(245, 241, 232, 0.15);
+    border-radius: 12px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .toggle.on { background: var(--ms-gold); }
+  .toggle::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    background: var(--ms-cream);
+    border-radius: 50%;
+    transition: transform 0.2s;
+  }
+  .toggle.on::after { transform: translateX(20px); background: var(--ms-green-deep); }
+
+  /* Done overlay */
+  .done-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--ms-green-deep);
+    z-index: 20;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    padding: 40px;
+    text-align: center;
+  }
+  .done-overlay.open { display: flex; animation: fadeIn 0.4s ease; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .done-overlay .big {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 56px;
+    line-height: 1;
+    color: var(--ms-gold);
+  }
+  .done-overlay .small {
+    font-size: 11px;
+    letter-spacing: 0.36em;
+    text-transform: uppercase;
+    color: var(--ms-muted);
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header>
+    <div class="brand-mark">M<span class="amp">&amp;</span>S</div>
+    <div class="brand-sub">Breaktimer</div>
+    <div class="divider"></div>
+  </header>
+
+  <div class="timer-stage">
+    <div class="ring-wrap">
+      <svg class="ring" viewBox="0 0 200 200">
+        <circle class="track" cx="100" cy="100" r="96"></circle>
+        <circle class="progress" cx="100" cy="100" r="96"
+                stroke-dasharray="603.19" stroke-dashoffset="0"></circle>
+      </svg>
+      <div class="timer-display">
+        <div class="time" id="time">00:00</div>
+        <div class="label" id="label">Choose a break</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="duration-row">
+      <button class="btn-duration" data-slot="lunch" id="btn-lunch">
+        <div class="mins"><span id="lunch-mins">30</span><span class="unit">min</span></div>
+        <div class="desc">Lunch</div>
+      </button>
+      <button class="btn-duration" data-slot="afternoon" id="btn-afternoon">
+        <div class="mins"><span id="afternoon-mins">15</span><span class="unit">min</span></div>
+        <div class="desc">Afternoon</div>
+      </button>
+    </div>
+    <div class="action-row">
+      <button class="btn-primary" id="btn-start" disabled>Start</button>
+      <button class="btn-secondary" id="btn-reset">Reset</button>
+    </div>
+    <div class="settings-link" id="open-settings">Adjust durations &amp; alerts</div>
+  </div>
+</div>
+
+<!-- Settings modal -->
+<div class="modal-backdrop" id="modal">
+  <div class="modal">
+    <h2>Settings</h2>
+    <div class="sub">Adjust your breaks</div>
+    <div class="field">
+      <label>Lunch break (minutes)</label>
+      <input type="number" id="set-lunch" min="1" max="180" inputmode="numeric">
+    </div>
+    <div class="field">
+      <label>Afternoon break (minutes)</label>
+      <input type="number" id="set-afternoon" min="1" max="180" inputmode="numeric">
+    </div>
+    <div class="toggle-row">
+      <span>Vibrate when done</span>
+      <div class="toggle on" id="toggle-vibrate"></div>
+    </div>
+    <div class="toggle-row">
+      <span>Notify when done</span>
+      <div class="toggle on" id="toggle-notify"></div>
+    </div>
+    <div class="action-row" style="margin-top: 20px;">
+      <button class="btn-primary" id="save-settings">Save</button>
+      <button class="btn-secondary" id="close-settings">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Done overlay -->
+<div class="done-overlay" id="done">
+  <div class="small">Time's up</div>
+  <div class="big">Break&apos;s over</div>
+  <div class="small" id="done-which">Lunch</div>
+  <button class="btn-primary" id="dismiss-done" style="margin-top: 20px; max-width: 200px;">Dismiss</button>
+</div>
+
+<script>
+  // --- State ---
+  const STORE = 'ms-breaktimer-v1';
+  const defaults = { lunch: 30, afternoon: 15, vibrate: true, notify: true };
+  const state = Object.assign({}, defaults, JSON.parse(localStorage.getItem(STORE) || '{}'));
+
+  let selected = null;        // 'lunch' | 'afternoon'
+  let totalSec = 0;
+  let remainSec = 0;
+  let intervalId = null;
+  let endAt = 0;
+  let running = false;
+  let wakeLock = null;
+
+  const $ = id => document.getElementById(id);
+  const ringCircumference = 2 * Math.PI * 96;
+
+  // --- Render ---
+  function fmt(s) {
+    s = Math.max(0, Math.round(s));
+    const m = Math.floor(s / 60);
+    const r = s % 60;
+    return String(m).padStart(2,'0') + ':' + String(r).padStart(2,'0');
+  }
+
+  function renderDurations() {
+    $('lunch-mins').textContent = state.lunch;
+    $('afternoon-mins').textContent = state.afternoon;
+    $('set-lunch').value = state.lunch;
+    $('set-afternoon').value = state.afternoon;
+    $('toggle-vibrate').classList.toggle('on', state.vibrate);
+    $('toggle-notify').classList.toggle('on', state.notify);
+  }
+
+  function renderTimer() {
+    const t = $('time');
+    t.textContent = fmt(remainSec);
+    t.classList.toggle('warning', running && remainSec > 0 && remainSec <= 60);
+    t.classList.toggle('done', remainSec === 0 && totalSec > 0 && !running);
+
+    const progress = totalSec > 0 ? remainSec / totalSec : 0;
+    const offset = ringCircumference * (1 - progress);
+    document.querySelector('.ring .progress').style.strokeDashoffset = offset;
+
+    const label = $('label');
+    if (running) {
+      label.textContent = selected === 'lunch' ? 'Lunch in progress' : 'Afternoon break';
+      label.classList.add('active');
+    } else if (selected) {
+      label.textContent = `Ready · ${state[selected]} min`;
+      label.classList.remove('active');
+    } else {
+      label.textContent = 'Choose a break';
+      label.classList.remove('active');
+    }
+  }
+
+  function selectSlot(slot) {
+    if (running) return;
+    selected = slot;
+    totalSec = state[slot] * 60;
+    remainSec = totalSec;
+    document.querySelectorAll('.btn-duration').forEach(b =>
+      b.classList.toggle('selected', b.dataset.slot === slot));
+    $('btn-start').disabled = false;
+    renderTimer();
+  }
+
+  // --- Timer mechanics ---
+  // Use absolute end-time so backgrounding/throttling doesn't desync.
+  function tick() {
+    const now = Date.now();
+    remainSec = Math.max(0, Math.round((endAt - now) / 1000));
+    renderTimer();
+    if (remainSec <= 0) finish();
+  }
+
+  async function start() {
+    if (!selected || running) return;
+    if (remainSec <= 0) remainSec = totalSec;
+    endAt = Date.now() + remainSec * 1000;
+    running = true;
+    $('btn-start').textContent = 'Pause';
+    requestWakeLock();
+    if (state.notify && 'Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+    intervalId = setInterval(tick, 250);
+    renderTimer();
+  }
+
+  function pause() {
+    if (!running) return;
+    clearInterval(intervalId);
+    intervalId = null;
+    remainSec = Math.max(0, Math.round((endAt - Date.now()) / 1000));
+    running = false;
+    $('btn-start').textContent = 'Resume';
+    releaseWakeLock();
+    renderTimer();
+  }
+
+  function reset() {
+    clearInterval(intervalId);
+    intervalId = null;
+    running = false;
+    remainSec = selected ? state[selected] * 60 : 0;
+    totalSec = remainSec;
+    $('btn-start').textContent = 'Start';
+    $('btn-start').disabled = !selected;
+    releaseWakeLock();
+    renderTimer();
+  }
+
+  function finish() {
+    clearInterval(intervalId);
+    intervalId = null;
+    running = false;
+    remainSec = 0;
+    releaseWakeLock();
+    if (state.vibrate && 'vibrate' in navigator) {
+      navigator.vibrate([400, 150, 400, 150, 600]);
+    }
+    if (state.notify && 'Notification' in window && Notification.permission === 'granted') {
+      try {
+        new Notification('M&S Breaktimer', {
+          body: `Your ${selected} break is over.`,
+          icon: 'icon-192.png',
+          badge: 'icon-192.png',
+          tag: 'ms-break',
+          requireInteraction: false
+        });
+      } catch (e) { /* ignore */ }
+    }
+    $('done-which').textContent = selected === 'lunch' ? 'Lunch break' : 'Afternoon break';
+    $('done').classList.add('open');
+    $('btn-start').textContent = 'Start';
+    renderTimer();
+  }
+
+  // --- Wake lock to keep screen on during break ---
+  async function requestWakeLock() {
+    try {
+      if ('wakeLock' in navigator) {
+        wakeLock = await navigator.wakeLock.request('screen');
+      }
+    } catch (e) { /* not supported */ }
+  }
+  function releaseWakeLock() {
+    if (wakeLock) { try { wakeLock.release(); } catch(e){} wakeLock = null; }
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && running) requestWakeLock();
+  });
+
+  // --- Persistence ---
+  function save() { localStorage.setItem(STORE, JSON.stringify(state)); }
+
+  // --- Wire up ---
+  $('btn-lunch').addEventListener('click', () => selectSlot('lunch'));
+  $('btn-afternoon').addEventListener('click', () => selectSlot('afternoon'));
+  $('btn-start').addEventListener('click', () => running ? pause() : start());
+  $('btn-reset').addEventListener('click', reset);
+
+  $('open-settings').addEventListener('click', () => {
+    renderDurations();
+    $('modal').classList.add('open');
+  });
+  $('close-settings').addEventListener('click', () => $('modal').classList.remove('open'));
+  $('save-settings').addEventListener('click', () => {
+    const l = parseInt($('set-lunch').value, 10);
+    const a = parseInt($('set-afternoon').value, 10);
+    if (l > 0 && l <= 180) state.lunch = l;
+    if (a > 0 && a <= 180) state.afternoon = a;
+    state.vibrate = $('toggle-vibrate').classList.contains('on');
+    state.notify = $('toggle-notify').classList.contains('on');
+    save();
+    renderDurations();
+    if (selected) selectSlot(selected); // refresh display if active
+    $('modal').classList.remove('open');
+  });
+  $('toggle-vibrate').addEventListener('click', e => e.currentTarget.classList.toggle('on'));
+  $('toggle-notify').addEventListener('click', e => {
+    e.currentTarget.classList.toggle('on');
+    if (e.currentTarget.classList.contains('on') && 'Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  });
+
+  $('dismiss-done').addEventListener('click', () => {
+    $('done').classList.remove('open');
+    if ('vibrate' in navigator) navigator.vibrate(0);
+    reset();
+  });
+
+  // --- Init ---
+  renderDurations();
+  renderTimer();
+
+  // Register service worker for offline / installability
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  }
+</script>
+</body>
+</html>
