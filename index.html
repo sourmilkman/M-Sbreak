@@ -11,169 +11,145 @@
 <title>M&amp;S Breaktimer</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
-<link rel="icon" href="icon-192.png">
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-
 <style>
-  :root {
-    --ms-green: #00401C;
-    --ms-green-deep: #002D14;
-    --ms-green-light: #1F5E3A;
-    --ms-cream: #F5F1E8;
-    --ms-gold: #B8956A;
-    --ms-muted: rgba(245, 241, 232, 0.55);
-    --ms-line: rgba(245, 241, 232, 0.15);
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  html, body { height: 100%; overflow: hidden; overscroll-behavior: none; background: var(--ms-green-deep); }
-  body {
-    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
-    color: var(--ms-cream);
-    background: radial-gradient(ellipse at top, var(--ms-green-light) 0%, var(--ms-green) 40%, var(--ms-green-deep) 100%);
-    display: flex; flex-direction: column;
-    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-    user-select: none; -webkit-user-select: none;
-  }
-  body::before {
-    content: ''; position: fixed; inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
-    opacity: 0.05; pointer-events: none; z-index: 1;
-  }
-  .app {
-    flex: 1; display: flex; flex-direction: column;
-    padding: 24px 28px 32px; position: relative; z-index: 2;
-    max-width: 480px; margin: 0 auto; width: 100%;
-  }
-  header { text-align: center; padding-top: 12px; }
-  .brand-mark { font-weight: 800; font-size: 26px; letter-spacing: -0.04em; line-height: 1; }
-  .brand-mark .amp { font-weight: 300; color: var(--ms-gold); margin: 0 1px; }
-  .brand-sub {
-    font-size: 10px; letter-spacing: 0.32em; text-transform: uppercase;
-    color: var(--ms-muted); margin-top: 8px; font-weight: 500;
-  }
-  .divider { width: 32px; height: 1px; background: var(--ms-gold); margin: 16px auto 0; opacity: 0.6; }
+:root {
+  --green: #00401C; --green-deep: #002D14; --green-light: #1F5E3A;
+  --cream: #F5F1E8; --gold: #B8956A;
+  --muted: rgba(245,241,232,0.55); --line: rgba(245,241,232,0.15);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; background: var(--green-deep); }
+body {
+  font-family: 'Manrope', sans-serif; color: var(--cream);
+  background: radial-gradient(ellipse at top, var(--green-light), var(--green) 45%, var(--green-deep));
+  display: flex; flex-direction: column;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  user-select: none; -webkit-user-select: none;
+}
+.app {
+  flex: 1; display: flex; flex-direction: column;
+  padding: 24px 28px 32px; max-width: 480px; margin: 0 auto; width: 100%;
+}
+header { text-align: center; padding-top: 12px; }
+.brand { font-weight: 800; font-size: 26px; letter-spacing: -0.04em; }
+.brand .amp { font-weight: 300; color: var(--gold); }
+.brand-sub { font-size: 10px; letter-spacing: 0.32em; text-transform: uppercase; color: var(--muted); margin-top: 8px; font-weight: 500; }
+.divider { width: 32px; height: 1px; background: var(--gold); margin: 16px auto 0; opacity: 0.6; }
 
-  .timer-stage { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-  .ring-wrap { position: relative; width: min(78vw, 320px); aspect-ratio: 1; display: flex; align-items: center; justify-content: center; }
-  .ring { position: absolute; inset: 0; transform: rotate(-90deg); }
-  .ring circle { fill: none; stroke-width: 2; }
-  .ring .track { stroke: var(--ms-line); }
-  .ring .progress { stroke: var(--ms-gold); stroke-linecap: round; transition: stroke-dashoffset 0.95s linear; }
+.timer-stage {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.ring-wrap {
+  position: relative; width: min(78vw, 300px); aspect-ratio: 1;
+  display: flex; align-items: center; justify-content: center;
+}
+.ring { position: absolute; inset: 0; transform: rotate(-90deg); }
+.ring circle { fill: none; stroke-width: 2; }
+.ring .track { stroke: var(--line); }
+.ring .progress { stroke: var(--gold); stroke-linecap: round; transition: stroke-dashoffset 0.95s linear; }
+.timer-center { text-align: center; position: relative; z-index: 1; }
+.time {
+  font-weight: 200; font-size: clamp(60px, 18vw, 90px); letter-spacing: -0.05em; line-height: 1;
+  font-variant-numeric: tabular-nums; transition: color 0.3s;
+}
+.time.warning { color: var(--gold); }
+.time.done { color: #FF8A65; animation: pulse 0.8s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+.tlabel { margin-top: 12px; font-size: 10px; letter-spacing: 0.34em; text-transform: uppercase; color: var(--muted); font-weight: 500; min-height: 14px; }
+.tlabel.active { color: var(--gold); }
+.thint { font-size: 9px; letter-spacing: 0.26em; text-transform: uppercase; color: var(--muted); margin-top: 5px; opacity: 0.55; font-weight: 500; }
 
-  .timer-display { text-align: center; position: relative; z-index: 1; cursor: pointer; }
-  .time {
-    font-weight: 200; font-size: clamp(64px, 20vw, 100px); letter-spacing: -0.05em; line-height: 1;
-    font-variant-numeric: tabular-nums; transition: color 0.3s ease;
-    display: inline-block; padding: 4px 8px; border-radius: 4px;
-  }
-  .time.warning { color: var(--ms-gold); }
-  .time.done { color: #FF8A65; animation: pulse 0.8s ease-in-out infinite; }
-  .timer-display.editable .time { border-bottom: 1px dashed var(--ms-line); }
-  .timer-display.editable:active .time { background: rgba(245, 241, 232, 0.06); }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-  .label {
-    margin-top: 14px; font-size: 10px; letter-spacing: 0.36em; text-transform: uppercase;
-    color: var(--ms-muted); min-height: 14px; font-weight: 500;
-  }
-  .label.active { color: var(--ms-gold); }
-  .hint { font-size: 9px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--ms-muted); margin-top: 6px; opacity: 0.6; font-weight: 500; }
+.controls { display: flex; flex-direction: column; gap: 14px; padding-top: 24px; }
+.dur-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.btn-dur {
+  background: rgba(245,241,232,0.04); border: 1px solid var(--line); color: var(--cream);
+  padding: 18px 14px; border-radius: 2px; font-family: inherit; cursor: pointer;
+  transition: all 0.18s; text-align: left;
+}
+.btn-dur:active { transform: scale(0.97); background: rgba(245,241,232,0.09); }
+.btn-dur.sel { background: var(--cream); color: var(--green-deep); border-color: var(--cream); }
+.btn-dur .mins { font-size: 22px; font-weight: 700; letter-spacing: -0.03em; display: flex; align-items: baseline; gap: 3px; }
+.btn-dur .mins .u { font-size: 10px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.65; }
+.btn-dur .desc { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; margin-top: 5px; opacity: 0.6; font-weight: 500; }
+.act-row { display: flex; gap: 12px; }
+.btn-p, .btn-s {
+  flex: 1; padding: 16px; border-radius: 2px; font-family: inherit;
+  font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase; font-weight: 700;
+  cursor: pointer; transition: all 0.18s; border: 1px solid var(--line);
+}
+.btn-p { background: var(--gold); color: var(--green-deep); border-color: var(--gold); flex: 2; }
+.btn-p:active { opacity: 0.85; transform: scale(0.97); }
+.btn-p:disabled { opacity: 0.3; cursor: not-allowed; }
+.btn-s { background: transparent; color: var(--cream); }
+.btn-s:active { background: rgba(245,241,232,0.08); }
+.settings-link { text-align: center; margin-top: 16px; font-size: 10px; letter-spacing: 0.26em; text-transform: uppercase; color: var(--muted); cursor: pointer; font-weight: 500; }
 
-  /* editor uses modal-backdrop pattern - no extra CSS needed */
-  .stepper { display: flex; align-items: center; gap: 16px; }
-  .step-btn {
-    width: 56px; height: 56px; border-radius: 50%;
-    background: rgba(245, 241, 232, 0.06); border: 1px solid var(--ms-line);
-    color: var(--ms-cream); font-size: 28px; font-weight: 300; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .step-btn:active { background: rgba(245, 241, 232, 0.14); transform: scale(0.95); }
-  .step-value {
-    font-size: 72px; font-weight: 200; letter-spacing: -0.04em; line-height: 1;
-    min-width: 120px; text-align: center; font-variant-numeric: tabular-nums;
-  }
-  .step-unit { font-size: 11px; letter-spacing: 0.32em; text-transform: uppercase; color: var(--ms-muted); font-weight: 500; }
-  .step-done {
-    margin-top: 4px; background: var(--ms-gold); color: var(--ms-green-deep); border: none;
-    padding: 12px 32px; border-radius: 2px; font-family: inherit;
-    font-size: 11px; letter-spacing: 0.32em; text-transform: uppercase; font-weight: 700;
-  }
+/* Bottom sheets */
+.sheet-bg {
+  position: fixed; inset: 0; background: rgba(0,18,7,0.82); backdrop-filter: blur(8px);
+  z-index: 10; display: none; align-items: flex-end; justify-content: center;
+}
+.sheet-bg.open { display: flex; }
+.sheet {
+  background: var(--green); border-top: 1px solid var(--gold);
+  width: 100%; max-width: 480px;
+  padding: 28px 28px calc(28px + env(safe-area-inset-bottom));
+  animation: up 0.28s ease;
+}
+@keyframes up { from{transform:translateY(100%)} to{transform:translateY(0)} }
+.sheet h2 { font-weight: 700; font-size: 20px; letter-spacing: -0.02em; margin-bottom: 4px; }
+.sheet .sub { font-size: 10px; letter-spacing: 0.26em; text-transform: uppercase; color: var(--muted); margin-bottom: 20px; font-weight: 500; }
 
-  .controls { display: flex; flex-direction: column; gap: 14px; padding-top: 24px; }
-  .duration-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .btn-duration {
-    background: rgba(245, 241, 232, 0.04); border: 1px solid var(--ms-line);
-    color: var(--ms-cream); padding: 18px 14px; border-radius: 2px;
-    font-family: inherit; cursor: pointer; transition: all 0.2s ease;
-    text-align: left; backdrop-filter: blur(10px);
-  }
-  .btn-duration:active { background: rgba(245, 241, 232, 0.1); transform: scale(0.98); }
-  .btn-duration.selected { background: var(--ms-cream); color: var(--ms-green-deep); border-color: var(--ms-cream); }
-  .btn-duration .mins { font-size: 24px; font-weight: 700; line-height: 1; letter-spacing: -0.03em; display: flex; align-items: baseline; gap: 4px; }
-  .btn-duration .mins .unit { font-size: 10px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.7; }
-  .btn-duration .desc { font-size: 10px; letter-spacing: 0.24em; text-transform: uppercase; margin-top: 6px; opacity: 0.65; font-weight: 500; }
+/* Stepper inside editor sheet */
+.stepper { display: flex; align-items: center; justify-content: center; gap: 20px; margin: 8px 0 20px; }
+.sbtn {
+  width: 60px; height: 60px; border-radius: 50%;
+  background: rgba(245,241,232,0.08); border: 1px solid var(--line);
+  color: var(--cream); font-size: 30px; font-weight: 300; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+}
+.sbtn:active { background: rgba(245,241,232,0.18); }
+.sval {
+  font-size: 72px; font-weight: 200; letter-spacing: -0.04em; line-height: 1;
+  min-width: 120px; text-align: center; font-variant-numeric: tabular-nums;
+}
+.sunit { text-align: center; font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--muted); font-weight: 500; margin-bottom: 24px; }
 
-  .action-row { display: flex; gap: 12px; margin-top: 4px; }
-  .btn-primary, .btn-secondary {
-    flex: 1; padding: 16px; border-radius: 2px; font-family: inherit;
-    font-size: 11px; letter-spacing: 0.32em; text-transform: uppercase; font-weight: 700;
-    cursor: pointer; transition: all 0.2s ease; border: 1px solid var(--ms-line);
-  }
-  .btn-primary { background: var(--ms-gold); color: var(--ms-green-deep); border-color: var(--ms-gold); flex: 2; }
-  .btn-primary:active { transform: scale(0.98); opacity: 0.9; }
-  .btn-primary:disabled { opacity: 0.3; cursor: not-allowed; }
-  .btn-secondary { background: transparent; color: var(--ms-cream); }
-  .btn-secondary:active { background: rgba(245, 241, 232, 0.08); }
+/* Toggles */
+.tog-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.tog-row:last-of-type { border-bottom: none; }
+.tog-row span { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 500; }
+.tog { width: 44px; height: 24px; background: rgba(245,241,232,0.15); border-radius: 12px; position: relative; cursor: pointer; transition: background 0.2s; flex-shrink: 0; }
+.tog.on { background: var(--gold); }
+.tog::after { content:''; position:absolute; top:3px; left:3px; width:18px; height:18px; background:var(--cream); border-radius:50%; transition:transform 0.2s; }
+.tog.on::after { transform:translateX(20px); background:var(--green-deep); }
 
-  .settings-link { text-align: center; margin-top: 16px; font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--ms-muted); cursor: pointer; font-weight: 500; }
-
-  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,20,8,0.85); backdrop-filter: blur(8px); z-index: 10; display: none; align-items: flex-end; justify-content: center; }
-  .modal-backdrop.open { display: flex; }
-  .modal {
-    background: var(--ms-green); border-top: 1px solid var(--ms-gold);
-    width: 100%; max-width: 480px;
-    padding: 28px 28px calc(28px + env(safe-area-inset-bottom));
-    animation: slideUp 0.3s ease;
-  }
-  @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
-  .modal h2 { font-weight: 700; font-size: 22px; letter-spacing: -0.02em; margin-bottom: 4px; }
-  .modal .sub { font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--ms-muted); margin-bottom: 20px; font-weight: 500; }
-  .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--ms-line); }
-  .toggle-row:last-of-type { border-bottom: none; }
-  .toggle-row span { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 500; }
-  .toggle { width: 44px; height: 24px; background: rgba(245,241,232,0.15); border-radius: 12px; position: relative; cursor: pointer; transition: background 0.2s; flex-shrink: 0; }
-  .toggle.on { background: var(--ms-gold); }
-  .toggle::after { content:''; position:absolute; top:3px; left:3px; width:18px; height:18px; background: var(--ms-cream); border-radius: 50%; transition: transform 0.2s; }
-  .toggle.on::after { transform: translateX(20px); background: var(--ms-green-deep); }
-
-  /* Done overlay - fixed: children no longer flex-grow into giant rectangles */
-  .done-overlay {
-    position: fixed; inset: 0; background: var(--ms-green-deep); z-index: 20;
-    display: none; flex-direction: column; align-items: center; justify-content: center;
-    padding: 40px 28px; text-align: center;
-  }
-  .done-overlay.open { display: flex; animation: fadeIn 0.4s ease; }
-  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
-  .done-overlay > * { flex: 0 0 auto; max-width: 100%; }
-  .done-overlay .small { font-size: 11px; letter-spacing: 0.36em; text-transform: uppercase; color: var(--ms-muted); font-weight: 500; margin-bottom: 20px; }
-  .done-overlay .big { font-weight: 200; font-size: clamp(48px, 14vw, 72px); letter-spacing: -0.04em; line-height: 1; color: var(--ms-gold); margin-bottom: 16px; }
-  .done-overlay .which { font-size: 11px; letter-spacing: 0.36em; text-transform: uppercase; color: var(--ms-muted); font-weight: 500; margin-bottom: 40px; }
-  .done-overlay .dismiss {
-    background: var(--ms-gold); color: var(--ms-green-deep); border: none;
-    padding: 16px 48px; border-radius: 2px; font-family: inherit;
-    font-size: 11px; letter-spacing: 0.32em; text-transform: uppercase; font-weight: 700;
-    width: auto; min-width: 220px; cursor: pointer;
-  }
-  .done-overlay .dismiss:active { opacity: 0.85; transform: scale(0.98); }
+/* Done overlay */
+.done-overlay {
+  position: fixed; inset: 0; background: var(--green-deep); z-index: 20;
+  display: none; flex-direction: column; align-items: center; justify-content: center;
+  padding: 40px 28px; text-align: center; gap: 0;
+}
+.done-overlay.open { display: flex; animation: fadein 0.4s ease; }
+@keyframes fadein { from{opacity:0} to{opacity:1} }
+.done-sm { font-size: 11px; letter-spacing: 0.34em; text-transform: uppercase; color: var(--muted); font-weight: 500; margin-bottom: 18px; }
+.done-big { font-weight: 200; font-size: clamp(48px,13vw,70px); letter-spacing: -0.04em; color: var(--gold); margin-bottom: 14px; }
+.done-which { font-size: 11px; letter-spacing: 0.34em; text-transform: uppercase; color: var(--muted); font-weight: 500; margin-bottom: 40px; }
+.done-dismiss {
+  background: var(--gold); color: var(--green-deep); border: none;
+  padding: 16px 52px; border-radius: 2px; font-family: inherit;
+  font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase; font-weight: 700;
+  cursor: pointer; flex-shrink: 0;
+}
+.done-dismiss:active { opacity: 0.85; }
 </style>
 </head>
 <body>
-
 <div class="app">
   <header>
-    <div class="brand-mark">M<span class="amp">&amp;</span>S</div>
+    <div class="brand">M<span class="amp">&amp;</span>S</div>
     <div class="brand-sub">Breaktimer</div>
     <div class="divider"></div>
   </header>
@@ -181,333 +157,344 @@
   <div class="timer-stage">
     <div class="ring-wrap">
       <svg class="ring" viewBox="0 0 200 200">
-        <circle class="track" cx="100" cy="100" r="96"></circle>
-        <circle class="progress" cx="100" cy="100" r="96" stroke-dasharray="603.19" stroke-dashoffset="0"></circle>
+        <circle class="track" cx="100" cy="100" r="96"/>
+        <circle class="progress" id="ring-progress" cx="100" cy="100" r="96" stroke-dasharray="603.19" stroke-dashoffset="0"/>
       </svg>
-      <div class="timer-display" id="timer-display">
-        <div class="time" id="time">00:00</div>
-        <div class="label" id="label">Choose a break</div>
-        <div class="hint" id="hint" style="display:none;">Tap to adjust</div>
+      <div class="timer-center" id="timer-center">
+        <div class="time" id="time-display">00:00</div>
+        <div class="tlabel" id="tlabel">Choose a break</div>
+        <div class="thint" id="thint" style="visibility:hidden">Tap to adjust</div>
       </div>
     </div>
   </div>
 
-<!-- Adjust duration sheet -->
-<div class="modal-backdrop" id="editor-backdrop">
-  <div class="modal" id="editor-modal">
-    <h2 id="editor-title">Adjust duration</h2>
-    <div class="sub" id="editor-sub">Lunch break</div>
-    <div class="stepper" style="justify-content:center; margin: 24px 0;">
-      <button class="step-btn" id="step-down">&#x2212;</button>
-      <div class="step-value" id="step-value">30</div>
-      <button class="step-btn" id="step-up">+</button>
-    </div>
-    <div class="step-unit" style="text-align:center; margin-bottom:24px;">minutes</div>
-    <div class="action-row">
-      <button class="btn-primary" id="step-done">Set</button>
-      <button class="btn-secondary" id="step-cancel">Cancel</button>
-    </div>
-  </div>
-</div>
-
   <div class="controls">
-    <div class="duration-row">
-      <button class="btn-duration" data-slot="lunch" id="btn-lunch">
-        <div class="mins"><span id="lunch-mins">30</span><span class="unit">min</span></div>
+    <div class="dur-row">
+      <button class="btn-dur" id="btn-lunch">
+        <div class="mins"><span id="lunch-mins">30</span><span class="u">min</span></div>
         <div class="desc">Lunch</div>
       </button>
-      <button class="btn-duration" data-slot="afternoon" id="btn-afternoon">
-        <div class="mins"><span id="afternoon-mins">15</span><span class="unit">min</span></div>
+      <button class="btn-dur" id="btn-afternoon">
+        <div class="mins"><span id="afternoon-mins">15</span><span class="u">min</span></div>
         <div class="desc">Afternoon</div>
       </button>
     </div>
-    <div class="action-row">
-      <button class="btn-primary" id="btn-start" disabled>Start</button>
-      <button class="btn-secondary" id="btn-reset">Reset</button>
+    <div class="act-row">
+      <button class="btn-p" id="btn-start" disabled>Start</button>
+      <button class="btn-s" id="btn-reset">Reset</button>
     </div>
-    <div class="settings-link" id="open-settings">Sound &amp; alerts</div>
+    <div class="settings-link" id="open-alerts">Sound &amp; alerts</div>
   </div>
 </div>
 
-<div class="modal-backdrop" id="modal">
-  <div class="modal">
+<!-- Duration editor sheet -->
+<div class="sheet-bg" id="editor-bg">
+  <div class="sheet">
+    <h2>Adjust duration</h2>
+    <div class="sub" id="editor-label">Lunch break</div>
+    <div class="stepper">
+      <button class="sbtn" id="sdown">&#x2212;</button>
+      <div class="sval" id="sval">30</div>
+      <button class="sbtn" id="sup">+</button>
+    </div>
+    <div class="sunit">minutes</div>
+    <div class="act-row">
+      <button class="btn-p" id="editor-set">Set</button>
+      <button class="btn-s" id="editor-cancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Alerts settings sheet -->
+<div class="sheet-bg" id="alerts-bg">
+  <div class="sheet">
     <h2>Alerts</h2>
     <div class="sub">When the timer finishes</div>
-    <div class="toggle-row"><span>Vibrate</span><div class="toggle on" id="toggle-vibrate"></div></div>
-    <div class="toggle-row"><span>Sound</span><div class="toggle on" id="toggle-sound"></div></div>
-    <div class="toggle-row"><span>Notification</span><div class="toggle on" id="toggle-notify"></div></div>
-    <div class="action-row" style="margin-top:24px;">
-      <button class="btn-primary" id="save-settings">Save</button>
-      <button class="btn-secondary" id="close-settings">Cancel</button>
+    <div class="tog-row"><span>Vibrate</span><div class="tog on" id="tog-vibrate"></div></div>
+    <div class="tog-row"><span>Sound</span><div class="tog on" id="tog-sound"></div></div>
+    <div class="tog-row"><span>Notification</span><div class="tog on" id="tog-notify"></div></div>
+    <div class="act-row" style="margin-top:24px">
+      <button class="btn-p" id="alerts-save">Save</button>
+      <button class="btn-s" id="alerts-cancel">Cancel</button>
     </div>
   </div>
 </div>
 
-<div class="done-overlay" id="done">
-  <div class="small">Time's up</div>
-  <div class="big">Break&apos;s over</div>
-  <div class="which" id="done-which">Lunch</div>
-  <button class="dismiss" id="dismiss-done">Dismiss</button>
+<!-- Done overlay -->
+<div class="done-overlay" id="done-overlay">
+  <div class="done-sm">Time's up</div>
+  <div class="done-big">Break's over</div>
+  <div class="done-which" id="done-which">Lunch break</div>
+  <button class="done-dismiss" id="done-dismiss">Dismiss</button>
 </div>
 
 <script>
-  const STORE = 'ms-breaktimer-v1';
-  const defaults = { lunch: 30, afternoon: 15, vibrate: true, sound: true, notify: true };
-  const state = Object.assign({}, defaults, JSON.parse(localStorage.getItem(STORE) || '{}'));
+const STORE = 'ms-bt-v3';
+const DEF = { lunch:30, afternoon:15, vibrate:true, sound:true, notify:true };
+let cfg = Object.assign({}, DEF, JSON.parse(localStorage.getItem(STORE)||'{}'));
 
-  let selected = null, totalSec = 0, remainSec = 0, intervalId = null, endAt = 0, running = false;
-  let wakeLock = null, audioCtx = null, chimeLoop = null;
+let slot = null, totalSec = 0, remainSec = 0, endAt = 0, running = false;
+let ticker = null, chimer = null, wakeLock = null, audioCtx = null;
 
-  const $ = id => document.getElementById(id);
-  const ringCircumference = 2 * Math.PI * 96;
+const el = id => document.getElementById(id);
+const CIRC = 2 * Math.PI * 96;
 
-  function fmt(s) {
-    s = Math.max(0, Math.round(s));
-    return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0');
-  }
-  function save() { localStorage.setItem(STORE, JSON.stringify(state)); }
+function saveCfg() { localStorage.setItem(STORE, JSON.stringify(cfg)); }
 
-  function renderDurations() {
-    $('lunch-mins').textContent = state.lunch;
-    $('afternoon-mins').textContent = state.afternoon;
-    $('toggle-vibrate').classList.toggle('on', state.vibrate);
-    $('toggle-sound').classList.toggle('on', state.sound);
-    $('toggle-notify').classList.toggle('on', state.notify);
-  }
+function fmt(s) {
+  s = Math.max(0, Math.round(s));
+  return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0');
+}
 
-  function renderTimer() {
-    const t = $('time');
-    t.textContent = fmt(remainSec);
-    t.classList.toggle('warning', running && remainSec > 0 && remainSec <= 60);
-    t.classList.toggle('done', remainSec === 0 && totalSec > 0 && !running);
-    const progress = totalSec > 0 ? remainSec / totalSec : 0;
-    document.querySelector('.ring .progress').style.strokeDashoffset = ringCircumference * (1 - progress);
+function render() {
+  const t = el('time-display');
+  t.textContent = fmt(remainSec);
+  t.className = 'time' +
+    (running && remainSec > 0 && remainSec <= 60 ? ' warning' : '') +
+    (remainSec === 0 && totalSec > 0 && !running ? ' done' : '');
 
-    const label = $('label'), hint = $('hint'), display = $('timer-display');
-    if (running) {
-      label.textContent = selected === 'lunch' ? 'Lunch in progress' : 'Afternoon break';
-      label.classList.add('active');
-      hint.style.display = 'none';
-      display.classList.remove('editable');
-    } else if (selected) {
-      label.textContent = 'Ready · ' + state[selected] + ' min';
-      label.classList.remove('active');
-      hint.style.display = 'block';
-      display.classList.add('editable');
-    } else {
-      label.textContent = 'Choose a break';
-      label.classList.remove('active');
-      hint.style.display = 'none';
-      display.classList.remove('editable');
-    }
+  const pct = totalSec > 0 ? remainSec / totalSec : 0;
+  el('ring-progress').style.strokeDashoffset = CIRC * (1 - pct);
+
+  const lbl = el('tlabel'), hint = el('thint');
+  if (running) {
+    lbl.textContent = slot === 'lunch' ? 'Lunch in progress' : 'Afternoon break';
+    lbl.className = 'tlabel active';
+    hint.style.visibility = 'hidden';
+    el('timer-center').style.cursor = 'default';
+  } else if (slot) {
+    lbl.textContent = 'Ready \u00b7 ' + cfg[slot] + ' min';
+    lbl.className = 'tlabel';
+    hint.style.visibility = 'visible';
+    el('timer-center').style.cursor = 'pointer';
+  } else {
+    lbl.textContent = 'Choose a break';
+    lbl.className = 'tlabel';
+    hint.style.visibility = 'hidden';
+    el('timer-center').style.cursor = 'default';
   }
 
-  function selectSlot(slot) {
-    if (running) return;
-    selected = slot;
-    totalSec = state[slot] * 60;
-    remainSec = totalSec;
-    document.querySelectorAll('.btn-duration').forEach(b => b.classList.toggle('selected', b.dataset.slot === slot));
-    $('btn-start').disabled = false;
-    renderTimer();
-  }
+  el('lunch-mins').textContent = cfg.lunch;
+  el('afternoon-mins').textContent = cfg.afternoon;
+}
 
-  // Duration editor - bottom sheet modal
-  function openEditor() {
-    if (running || !selected) return;
-    $('step-value').textContent = state[selected];
-    $('editor-sub').textContent = selected === 'lunch' ? 'Lunch break' : 'Afternoon break';
-    $('editor-backdrop').classList.add('open');
-  }
-  function closeEditor(save_val) {
-    $('editor-backdrop').classList.remove('open');
-    if (!save_val) return;
-    const v = parseInt($('step-value').textContent, 10);
-    if (v > 0 && v <= 180) { state[selected] = v; save(); renderDurations(); selectSlot(selected); }
-  }
-  $('timer-display').addEventListener('click', () => openEditor());
-  $('step-up').addEventListener('click', () => {
-    $('step-value').textContent = Math.min(180, parseInt($('step-value').textContent,10) + 1);
-    if (navigator.vibrate) navigator.vibrate(8);
-  });
-  $('step-down').addEventListener('click', () => {
-    $('step-value').textContent = Math.max(1, parseInt($('step-value').textContent,10) - 1);
-    if (navigator.vibrate) navigator.vibrate(8);
-  });
-  let holdTimer = null;
-  function startHold(dir) {
-    holdTimer = setInterval(() => {
-      const cur = parseInt($('step-value').textContent, 10);
-      $('step-value').textContent = dir > 0 ? Math.min(180, cur+1) : Math.max(1, cur-1);
-    }, 100);
-  }
-  function stopHold() { if (holdTimer) { clearInterval(holdTimer); holdTimer = null; } }
-  $('step-up').addEventListener('pointerdown', () => setTimeout(() => startHold(1), 350));
-  $('step-down').addEventListener('pointerdown', () => setTimeout(() => startHold(-1), 350));
-  ['pointerup','pointerleave','pointercancel'].forEach(e => {
-    $('step-up').addEventListener(e, stopHold);
-    $('step-down').addEventListener(e, stopHold);
-  });
-  $('step-done').addEventListener('click', () => closeEditor(true));
-  $('step-cancel').addEventListener('click', () => closeEditor(false));
+function pick(s) {
+  if (running) return;
+  slot = s;
+  totalSec = cfg[slot] * 60;
+  remainSec = totalSec;
+  el('btn-lunch').classList.toggle('sel', slot === 'lunch');
+  el('btn-afternoon').classList.toggle('sel', slot === 'afternoon');
+  el('btn-start').disabled = false;
+  render();
+}
 
-  // Audio chime
-  function ensureAudio() {
-    if (!audioCtx) {
-      const Ctx = window.AudioContext || window.webkitAudioContext;
-      if (Ctx) audioCtx = new Ctx();
-    }
-    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-    return audioCtx;
-  }
-  function playBeep(freq, when, duration, gain) {
-    if (!audioCtx) return;
-    gain = gain || 0.3;
-    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-    o.frequency.value = freq; o.type = 'sine';
-    g.gain.setValueAtTime(0, when);
-    g.gain.linearRampToValueAtTime(gain, when + 0.02);
-    g.gain.linearRampToValueAtTime(0, when + duration);
-    o.connect(g).connect(audioCtx.destination);
-    o.start(when); o.stop(when + duration + 0.05);
-  }
-  function playChime() {
-    const ctx = ensureAudio(); if (!ctx) return;
-    const t = ctx.currentTime;
-    playBeep(523, t, 0.25);
-    playBeep(659, t + 0.18, 0.25);
-    playBeep(784, t + 0.36, 0.45);
-  }
-  function startChimeLoop() {
-    if (!state.sound) return;
-    playChime();
-    chimeLoop = setInterval(playChime, 1500);
-  }
-  function stopChimeLoop() { if (chimeLoop) { clearInterval(chimeLoop); chimeLoop = null; } }
+// ---- Editor sheet ----
+el('timer-center').addEventListener('click', () => {
+  if (!slot || running) return;
+  el('editor-label').textContent = slot === 'lunch' ? 'Lunch break' : 'Afternoon break';
+  el('sval').textContent = String(cfg[slot]);
+  el('editor-bg').classList.add('open');
+});
 
-  function tick() {
+function stepBy(delta) {
+  const cur = parseInt(el('sval').textContent, 10) || cfg[slot];
+  el('sval').textContent = String(Math.min(180, Math.max(1, cur + delta)));
+  if (navigator.vibrate) navigator.vibrate(8);
+}
+
+el('sup').addEventListener('click', () => stepBy(1));
+el('sdown').addEventListener('click', () => stepBy(-1));
+
+// Long press to fast-scroll
+let holdTimeout = null, holdInterval = null;
+function endHold() {
+  clearTimeout(holdTimeout); holdTimeout = null;
+  clearInterval(holdInterval); holdInterval = null;
+}
+function startHold(delta) {
+  holdTimeout = setTimeout(() => {
+    holdInterval = setInterval(() => stepBy(delta), 80);
+  }, 400);
+}
+['pointerdown','touchstart'].forEach(ev => {
+  el('sup').addEventListener(ev, e => { e.preventDefault(); startHold(1); });
+  el('sdown').addEventListener(ev, e => { e.preventDefault(); startHold(-1); });
+});
+['pointerup','pointerleave','pointercancel','touchend','touchcancel'].forEach(ev => {
+  el('sup').addEventListener(ev, endHold);
+  el('sdown').addEventListener(ev, endHold);
+});
+
+el('editor-set').addEventListener('click', () => {
+  const v = parseInt(el('sval').textContent, 10);
+  if (v >= 1 && v <= 180) { cfg[slot] = v; saveCfg(); }
+  el('editor-bg').classList.remove('open');
+  pick(slot); // re-select to refresh display
+});
+el('editor-cancel').addEventListener('click', () => el('editor-bg').classList.remove('open'));
+
+// ---- Alerts sheet ----
+el('open-alerts').addEventListener('click', () => {
+  el('tog-vibrate').classList.toggle('on', cfg.vibrate);
+  el('tog-sound').classList.toggle('on', cfg.sound);
+  el('tog-notify').classList.toggle('on', cfg.notify);
+  el('alerts-bg').classList.add('open');
+});
+['tog-vibrate','tog-sound','tog-notify'].forEach(id =>
+  el(id).addEventListener('click', e => e.currentTarget.classList.toggle('on')));
+el('alerts-save').addEventListener('click', () => {
+  cfg.vibrate = el('tog-vibrate').classList.contains('on');
+  cfg.sound   = el('tog-sound').classList.contains('on');
+  cfg.notify  = el('tog-notify').classList.contains('on');
+  saveCfg();
+  if (cfg.notify && 'Notification' in window && Notification.permission === 'default') Notification.requestPermission();
+  el('alerts-bg').classList.remove('open');
+});
+el('alerts-cancel').addEventListener('click', () => el('alerts-bg').classList.remove('open'));
+
+// ---- Timer ----
+function tick() {
+  remainSec = Math.max(0, Math.round((endAt - Date.now()) / 1000));
+  render();
+  if (remainSec <= 0) finish();
+}
+
+el('btn-start').addEventListener('click', () => {
+  if (running) {
+    // Pause
+    clearInterval(ticker); ticker = null;
     remainSec = Math.max(0, Math.round((endAt - Date.now()) / 1000));
-    renderTimer();
-    if (remainSec <= 0) finish();
-  }
-
-  async function start() {
-    if (!selected || running) return;
+    running = false;
+    el('btn-start').textContent = 'Resume';
+    cancelAlarm(); releaseWake();
+    render();
+  } else {
+    // Start / Resume
+    if (!slot) return;
     if (remainSec <= 0) remainSec = totalSec;
     endAt = Date.now() + remainSec * 1000;
     running = true;
-    $('btn-start').textContent = 'Pause';
-    ensureAudio();
+    el('btn-start').textContent = 'Pause';
+    primeAudio();
     scheduleAlarm(endAt);
-    requestWakeLock();
-    if (state.notify && 'Notification' in window && Notification.permission === 'default') Notification.requestPermission();
-    intervalId = setInterval(tick, 250);
-    renderTimer();
+    requestWake();
+    if (cfg.notify && 'Notification' in window && Notification.permission === 'default') Notification.requestPermission();
+    ticker = setInterval(tick, 250);
+    render();
   }
+});
 
-  function pause() {
-    if (!running) return;
-    clearInterval(intervalId); intervalId = null;
-    remainSec = Math.max(0, Math.round((endAt - Date.now())/1000));
-    running = false;
-    $('btn-start').textContent = 'Resume';
-    cancelAlarm(); releaseWakeLock();
-    renderTimer();
+el('btn-reset').addEventListener('click', () => {
+  clearInterval(ticker); ticker = null;
+  running = false;
+  remainSec = slot ? cfg[slot] * 60 : 0;
+  totalSec = remainSec;
+  el('btn-start').textContent = 'Start';
+  el('btn-start').disabled = !slot;
+  cancelAlarm(); stopChime(); releaseWake();
+  render();
+});
+
+el('btn-lunch').addEventListener('click', () => pick('lunch'));
+el('btn-afternoon').addEventListener('click', () => pick('afternoon'));
+
+function finish() {
+  clearInterval(ticker); ticker = null;
+  running = false; remainSec = 0;
+  cancelAlarm(); releaseWake();
+  if (cfg.vibrate && navigator.vibrate) navigator.vibrate([500,200,500,200,500,200,800]);
+  if (cfg.sound) startChime();
+  fireNotification();
+  el('done-which').textContent = slot === 'lunch' ? 'Lunch break' : 'Afternoon break';
+  el('done-overlay').classList.add('open');
+  el('btn-start').textContent = 'Start';
+  render();
+}
+
+el('done-dismiss').addEventListener('click', () => {
+  el('done-overlay').classList.remove('open');
+  stopChime();
+  if (navigator.vibrate) navigator.vibrate(0);
+  // Reset for next break
+  clearInterval(ticker); ticker = null;
+  running = false;
+  remainSec = slot ? cfg[slot] * 60 : 0;
+  totalSec = remainSec;
+  el('btn-start').textContent = 'Start';
+  el('btn-start').disabled = !slot;
+  render();
+});
+
+// ---- Audio ----
+function primeAudio() {
+  if (!audioCtx) {
+    const C = window.AudioContext || window.webkitAudioContext;
+    if (C) audioCtx = new C();
   }
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+}
+function beep(freq, when, dur, vol) {
+  if (!audioCtx) return;
+  vol = vol || 0.28;
+  const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+  o.type = 'sine'; o.frequency.value = freq;
+  g.gain.setValueAtTime(0, when);
+  g.gain.linearRampToValueAtTime(vol, when + 0.02);
+  g.gain.linearRampToValueAtTime(0, when + dur);
+  o.connect(g).connect(audioCtx.destination);
+  o.start(when); o.stop(when + dur + 0.05);
+}
+function chime() {
+  primeAudio();
+  const t = audioCtx ? audioCtx.currentTime : 0;
+  beep(523, t, 0.22); beep(659, t+0.16, 0.22); beep(784, t+0.32, 0.42);
+}
+function startChime() {
+  if (!cfg.sound) return;
+  chime();
+  chimer = setInterval(chime, 1500);
+}
+function stopChime() { clearInterval(chimer); chimer = null; }
 
-  function reset() {
-    clearInterval(intervalId); intervalId = null;
-    running = false;
-    remainSec = selected ? state[selected] * 60 : 0;
-    totalSec = remainSec;
-    $('btn-start').textContent = 'Start';
-    $('btn-start').disabled = !selected;
-    cancelAlarm(); stopChimeLoop(); releaseWakeLock();
-    renderTimer();
+// ---- Notification ----
+function fireNotification() {
+  if (!cfg.notify || !('Notification' in window) || Notification.permission !== 'granted') return;
+  const opts = {
+    body: 'Your ' + slot + ' break is over.',
+    icon: 'icon-192.png', tag: 'ms-bt', requireInteraction: true,
+    vibrate: cfg.vibrate ? [500,200,500,200,500] : undefined,
+    silent: false
+  };
+  if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+    navigator.serviceWorker.ready.then(r => r.showNotification('M&S Breaktimer \u2014 Time\u2019s up', opts));
+  } else {
+    try { new Notification('M&S Breaktimer \u2014 Time\u2019s up', opts); } catch(e){}
   }
+}
 
-  function finish() {
-    clearInterval(intervalId); intervalId = null;
-    running = false; remainSec = 0;
-    cancelAlarm(); releaseWakeLock();
-    if (state.vibrate && 'vibrate' in navigator) navigator.vibrate([500,200,500,200,500,200,800]);
-    if (state.sound) startChimeLoop();
-    showNotification();
-    $('done-which').textContent = selected === 'lunch' ? 'Lunch break' : 'Afternoon break';
-    $('done').classList.add('open');
-    $('btn-start').textContent = 'Start';
-    renderTimer();
-  }
+// ---- SW alarm ----
+function scheduleAlarm(ts) {
+  if (navigator.serviceWorker && navigator.serviceWorker.controller)
+    navigator.serviceWorker.controller.postMessage({ type:'alarm', endAt:ts, slot, vibrate:cfg.vibrate, notify:cfg.notify });
+}
+function cancelAlarm() {
+  if (navigator.serviceWorker && navigator.serviceWorker.controller)
+    navigator.serviceWorker.controller.postMessage({ type:'cancel' });
+}
 
-  function scheduleAlarm(endTimestamp) {
-    if (!navigator.serviceWorker || !navigator.serviceWorker.controller) return;
-    navigator.serviceWorker.controller.postMessage({
-      type: 'schedule-alarm', endAt: endTimestamp,
-      label: selected === 'lunch' ? 'Lunch break' : 'Afternoon break',
-      vibrate: state.vibrate, notify: state.notify
-    });
-  }
-  function cancelAlarm() {
-    if (!navigator.serviceWorker || !navigator.serviceWorker.controller) return;
-    navigator.serviceWorker.controller.postMessage({ type: 'cancel-alarm' });
-  }
-  function showNotification() {
-    if (!state.notify) return;
-    if (!('Notification' in window) || Notification.permission !== 'granted') return;
-    const opts = {
-      body: 'Your ' + selected + ' break has finished.',
-      icon: 'icon-192.png', badge: 'icon-192.png', tag: 'ms-break-done',
-      requireInteraction: true,
-      vibrate: state.vibrate ? [500,200,500,200,500] : undefined,
-      silent: false
-    };
-    if (navigator.serviceWorker && navigator.serviceWorker.ready) {
-      navigator.serviceWorker.ready.then(r => r.showNotification('M&S Breaktimer — Time\u2019s up', opts));
-    } else {
-      try { new Notification('M&S Breaktimer — Time\u2019s up', opts); } catch(e){}
-    }
-  }
+// ---- Wake lock ----
+async function requestWake() {
+  try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch(e){}
+}
+function releaseWake() { if (wakeLock) { try { wakeLock.release(); } catch(e){} wakeLock = null; } }
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && running) requestWake();
+});
 
-  async function requestWakeLock() {
-    try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch(e){}
-  }
-  function releaseWakeLock() { if (wakeLock) { try { wakeLock.release(); } catch(e){} wakeLock = null; } }
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && running) requestWakeLock();
-  });
-
-  $('btn-lunch').addEventListener('click', () => selectSlot('lunch'));
-  $('btn-afternoon').addEventListener('click', () => selectSlot('afternoon'));
-  $('btn-start').addEventListener('click', () => running ? pause() : start());
-  $('btn-reset').addEventListener('click', reset);
-
-  $('open-settings').addEventListener('click', () => { renderDurations(); $('modal').classList.add('open'); });
-  $('close-settings').addEventListener('click', () => $('modal').classList.remove('open'));
-  $('save-settings').addEventListener('click', () => {
-    state.vibrate = $('toggle-vibrate').classList.contains('on');
-    state.sound   = $('toggle-sound').classList.contains('on');
-    state.notify  = $('toggle-notify').classList.contains('on');
-    save();
-    if (state.notify && 'Notification' in window && Notification.permission === 'default') Notification.requestPermission();
-    $('modal').classList.remove('open');
-  });
-  ['toggle-vibrate','toggle-sound','toggle-notify'].forEach(id =>
-    $(id).addEventListener('click', e => e.currentTarget.classList.toggle('on')));
-
-  $('dismiss-done').addEventListener('click', () => {
-    $('done').classList.remove('open');
-    stopChimeLoop();
-    if ('vibrate' in navigator) navigator.vibrate(0);
-    if (navigator.serviceWorker && navigator.serviceWorker.ready) {
-      navigator.serviceWorker.ready.then(r => r.getNotifications({tag:'ms-break-done'}).then(ns => ns.forEach(n => n.close())));
-    }
-    reset();
-  });
-
-  renderDurations();
-  renderTimer();
-
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+// ---- Init ----
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+render();
 </script>
 </body>
 </html>
